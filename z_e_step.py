@@ -22,10 +22,17 @@ def get_k_coherence_set(mz, nz, window_size, xq, sp):
             related_windows = related_windows_ori - offset
             # 上面找到的是  在原始图像中,和像素 i,j 相似的 region
             # 然后再在之前构建的 sp 中进行查找就可以了
-            crt_set = sp[related_windows[:, :, 0].reshape(window_size * window_size).astype(int), related_windows[:, :,
-                                                                                                  1].reshape(
-                window_size * window_size).astype(int)].astype(int)
-            extended_list = [item for sublist in crt_set.tolist() for item in sublist]
+
+            # crt_set = sp[related_windows[:, :, 0].reshape(window_size * window_size).astype(int), related_windows[
+            # :, :, 1].reshape( window_size * window_size).astype(int)].astype(int)
+
+            crt_set = []
+            index_i = related_windows[:, :, 0].reshape(window_size * window_size).astype(int).tolist()
+            index_j = related_windows[:, :, 1].reshape(window_size * window_size).astype(int).tolist()
+            for pos in zip(index_i, index_j):
+                crt_set.append(sp[pos[0]][pos[1]])
+
+            extended_list = [item for sublist in crt_set for item in sublist]
             kcs[i][j] = list(set([tuple(z) for z in extended_list]))
             if np.min(kcs[i][j]) < 3:
                 print 'something error'
@@ -67,7 +74,7 @@ def z_e_step(image, mz, nz, window_size, xq, zp, sp, Z):
                     pixel_in_z_to_all_in_x_forward[i_for_z + i_offset][j_for_z + j_offset].append(
                         tuple(crt_map_in_x + [i_offset, j_offset]))
 
-    #  从反方向寻找一个对应关系
+    # 从反方向寻找一个对应关系
     pixel_in_z_to_all_in_x_inverse = []
     for i in range(mz):
         last_list = list()
@@ -82,7 +89,7 @@ def z_e_step(image, mz, nz, window_size, xq, zp, sp, Z):
             # 对于 z 中的 window 中的每一个像素,找到了在 x 中的一个对应
             for i_offset in range(- half_w, half_w + 1):
                 for j_offset in range(- half_w, half_w + 1):
-                    pixel_in_z_to_all_in_x_inverse[crt_map_in_z[0] + i_offset][crt_map_in_z[1] + j_offset]\
+                    pixel_in_z_to_all_in_x_inverse[crt_map_in_z[0] + i_offset][crt_map_in_z[1] + j_offset] \
                         .append((i_for_x + i_offset, j_for_x + j_offset))
 
     for i_for_z in range(half_w, mz - half_w):
@@ -126,4 +133,3 @@ def z_e_step(image, mz, nz, window_size, xq, zp, sp, Z):
                     Z[i_for_z, j_for_z] = one_candidate_value
                     # 这个 window 的最佳映射当然应该是数据来源对应的那个了
                     xq[i_for_z, j_for_z] = candidates[candidate_index]
-

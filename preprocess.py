@@ -80,4 +80,18 @@ def k_coherence_similarity_set(image, window_size, sp_size):
         assert res_i[0] == i
         index_ori = index_image_cor_map[i, :]
         sp[index_ori[0], index_ori[1]] = index_image_cor_map[res_i, :]
-    return sp
+
+    sp_list = sp.tolist()
+    empty_index_i = range(0, half_w)
+    empty_index_i.extend(range(m - half_w, m))
+    empty_index_j = range(0, half_w)
+    empty_index_j.extend(range(n - half_w, n))
+
+    for i in empty_index_i:
+        for j in range(n):
+            sp_list[i][j] = []
+
+    for j in empty_index_j:
+        for i in range(m):
+            sp_list[i][j] = []
+    return sp_list
